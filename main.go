@@ -31,6 +31,10 @@ func main() {
 	hub := newHub()
 	go hub.run()
 	http.Handle("/", http.FileServer(http.Dir("./build")))
+	// http.Handle("/api/cpu")
+	// http.Handle("/api/ram")
+	// http.Handle("/api/limits/ram")
+	// http.Handle("/api/limits/cpu")
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		serveWs(hub, w, r)
 	})

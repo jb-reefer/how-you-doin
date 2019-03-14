@@ -8,8 +8,10 @@ import (
 	"bytes"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
+	"github.com/c9s/goprocinfo/linux"
 	"github.com/gorilla/websocket"
 )
 
@@ -99,7 +101,14 @@ func (c *Client) writePump() {
 			if err != nil {
 				return
 			}
+
+			memInfo, memErr := linux.ReadMemInfo("/proc/meminfo")
+			if memErr != nil {
+				log.Fatal("memErr", memErr)
+			}
 			w.Write(message)
+			anotherMessage := []byte("Mem Percent: " + strconv.FormatUint(memInfo.MemFree, 10))
+			w.Write(anotherMessage)
 
 			// Add queued chat messages to the current websocket message.
 			n := len(c.send)
