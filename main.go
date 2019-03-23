@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strings"
 )
 
 var addr = flag.String("addr", ":8080", "http service address")
@@ -34,8 +33,6 @@ func main() {
 	go hub.run()
 	http.Handle("/", http.FileServer(http.Dir("./build")))
 	http.HandleFunc("/api/cpu", cpuController)
-	http.HandleFunc("/api/ram", ramController)
-	http.HandleFunc("/api/thinger", thingerController)
 	// http.Handle("/api/limits/ram")
 	// http.Handle("/api/limits/cpu")
 	http.HandleFunc("/ws", wsController(hub))
@@ -53,18 +50,6 @@ func wsController(hub *Hub) func(http.ResponseWriter, *http.Request) {
 
 func cpuController(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, GetUsedCPUPercent())
-}
-
-func ramController(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, GetFreePercent())
-}
-
-func thingerController(w http.ResponseWriter, r *http.Request) {
-	output := TestThinger()
-	// TODO: check for -1, which means no ' '
-	lastSpace := strings.LastIndex(output, " ")
-	percentage := output[lastSpace+1:]
-	fmt.Fprint(w, percentage)
 }
 
 // docker kill how-you-doin && docker rm how-you-doin && docker build . -t how-you-doin:latest && docker run -d  --name how-you-doin -p 8080:8080 how-you-doin:latest
