@@ -1,0 +1,30 @@
+.Alert {
+  width: 100vw;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 5px;
+  animation-name: fadeIn;
+  animation-duration: 2s;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+.Info {
+  background-color: cyan;
+}
+
+.Warning {
+  background-color: yellow;
+}
+
+.Error {
+  background-color: red;
+}
