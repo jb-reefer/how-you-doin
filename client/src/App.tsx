@@ -12,7 +12,10 @@ interface ICPUData {
 interface IAppState {
   cpuData: ICPUData[];
   crosshairValues: any;
+  error?: Error;
 }
+
+const SAMPLING_INTERVAL = 10 * 1000;
 
 class App extends Component<any, IAppState> {
   constructor(props) {
@@ -22,53 +25,32 @@ class App extends Component<any, IAppState> {
       crosshairValues: [],
     };
 
-    this.getCPUData().then(() => setInterval(this.getCPUData, 10 * 1000));
+    this.getCPUData().then(() => setInterval(this.getCPUData, SAMPLING_INTERVAL));
   }
 
-  private getCPUData = () => {
-    return fetch("/api/cpu")
-      .then((response) => response.text())
-      .then((percent: string) => {
-        const buffer: ICPUData[] = this.state.cpuData.concat({
-          x: new Date(),
-          y: parseFloat(percent),
-        })
-        this.setState({
-          cpuData: buffer,
-        });
-      })
-  }
-
-  // TODO: pretty this up
-  private _onMouseLeave = () => {
-    this.setState({ crosshairValues: [] });
-  };
-
-  private _onNearestX = (value, { index }) => {
-    this.setState({ crosshairValues: this.state.cpuData.map(d => d[index]) });
-  };
-
-  render = () => {
+  public render = () => {
     return (
       <div className="App">
         <div className="Graph">
-        {/* <Alert kind='Info'>Grumpy</Alert> */}
+        {this.state.error && <Alert kind='Error'>{this.state.error.message}</Alert>}
         <h1>CPU %</h1>
-        <XYPlot 
+        <XYPlot
           height={400}
           width={800}
-          onMouseLeave={this._onMouseLeave}
-          onNearestX={this._onNearestX}
+          onMouseLeave={this.onMouseLeave}
+          onNearestX={this.onNearestX}
+          xDomain={this.getXDomain()}
+          yDomain={[0, 100]}
         >
           <VerticalGridLines />
           <HorizontalGridLines />
-          <XAxis 
+          <XAxis
             width={50}
             tickFormat={v => {
             const day = new Date(v);
               return `${day.getHours()}:${day.getMinutes()}:${day.getSeconds()}`
           }} tickLabelAngle={-90}/>
-          <YAxis yDomain={[0, 100]} />
+          <YAxis />
           <LineSeries
             data={this.state.cpuData}
             opacity={1}
@@ -85,9 +67,59 @@ class App extends Component<any, IAppState> {
           </Crosshair>
         </XYPlot>
         </div>
-        <Messages data={this.state.cpuData} />
+        <Messages />
       </div>
     );
+  }
+
+  private tenMinutesOfSamples = () => {
+    const tenMinutesMills = 10 * 60 * 1000;
+    return tenMinutesMills / SAMPLING_INTERVAL;
+  }
+
+  private getCPUData = () => {
+    return fetch("/api/cpu")
+      .then((response) => response.text())
+      .then((percent: string) => {
+        const y = parseFloat(percent);
+        if (isNaN(y)) {
+          throw new Error("Could not parse cpu data from server");
+        }
+
+        const buffer: ICPUData[] = this.state.cpuData.concat({
+          x: new Date(),
+          y,
+        });
+
+        // Only keep 10 minutes of samples
+        // TODO: set the xDomain attr below
+        if (buffer.length + 1 > this.tenMinutesOfSamples()) {
+          buffer.shift();
+        }
+        this.setState({
+          cpuData: buffer,
+        });
+      })
+      .catch((error) => {
+        this.setState({
+          error
+        });
+      });
+  }
+
+  // TODO: pretty this up
+  private onMouseLeave = () => {
+    this.setState({ crosshairValues: [] });
+  };
+
+  private onNearestX = (value, { index }) => {
+    this.setState({ crosshairValues: this.state.cpuData.map(d => d[index]) });
+  };
+
+  private getXDomain = () => {
+    const now = new Date();
+    const tenMinutesAgo = (new Date()).setMinutes(now.getMinutes() - 10);
+    return [tenMinutesAgo, now.getTime()];
   }
 }
 

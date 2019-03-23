@@ -1,5 +1,12 @@
 @import "~react-vis/dist/style";
 
 .App {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+}
+
+.Graph {
+  width: 70vw;
   text-align: center;
 }
