@@ -31,4 +31,4 @@
 
 [[constraint]]
   branch = "master"
-  name = "github.com/c9s/goprocinfo"
+  name = "github.com/gorilla/websocket"
