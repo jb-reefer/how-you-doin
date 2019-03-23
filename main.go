@@ -31,7 +31,7 @@ func main() {
 	flag.Parse()
 	hub := newHub()
 	go hub.run()
-	http.Handle("/", http.FileServer(http.Dir("./build")))
+	http.Handle("/", http.FileServer(http.Dir("./client/build")))
 	http.HandleFunc("/api/cpu", cpuController)
 	// http.Handle("/api/limits/ram")
 	// http.Handle("/api/limits/cpu")
