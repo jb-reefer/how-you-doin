@@ -1,8 +1,10 @@
 package main
 
 import (
+	"errors"
 	"log"
 	"os/exec"
+	"strconv"
 	"strings"
 )
 
@@ -23,12 +25,25 @@ func getMPStatData() string {
 	return string(out[:])
 }
 
-// GetUsedCPUPercent Get percent of current cpu (linux only)
-func GetUsedCPUPercent() string {
-	output := getMPStatData()
-	// TODO: check for -1, which means no ' '
-	lastSpace := strings.LastIndex(output, " ")
-	percentage := output[lastSpace+1:]
+func mpstatError(err error) {
+	log.Print(err)
+	log.Fatal("Could not parse CPU data from MPStat")
+}
 
-	return percentage
+// GetUsedCPUPercent Get percent of current cpu (linux only)
+func GetUsedCPUPercent() float64 {
+	mpstatData := getMPStatData()
+	lastSpace := strings.LastIndex(mpstatData, " ")
+
+	if lastSpace == -1 {
+		mpstatError(errors.New("Could not find CPU percentage"))
+	}
+
+	idlePercentage, err := strconv.ParseFloat(mpstatData[lastSpace+1:lastSpace+6], 32)
+
+	if err != nil {
+		mpstatError(err)
+	}
+
+	return 100.00 - idlePercentage
 }

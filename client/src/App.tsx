@@ -7,15 +7,7 @@ interface CPUData {
   x: Date;
   y: number;
 }
-const dummyData: CPUData[] = [ 
-{ x: new Date('2019-03-23T20:15:39.450Z'), y: 80 },
-{ x: new Date('2019-03-23T20:15:40.213Z'), y: 15 },
-{ x: new Date('2019-03-23T20:15:41.224Z'), y: 67 },
-{ x: new Date('2019-03-23T20:15:42.219Z'), y: 51 },
-{ x: new Date('2019-03-23T20:15:43.218Z'), y: 53 },
-{ x: new Date('2019-03-23T20:15:44.240Z'), y: 56 },
-{ x: new Date('2019-03-23T20:15:45.227Z'), y: 59 },
-];
+
 // TODO: better naming!
 interface AppState {
   cpuData: CPUData[];
@@ -61,7 +53,7 @@ class App extends Component<any, AppState> {
 
   render = () => {
     return (
-      <div className="App" style={{display: 'flex'}}>
+      <div className="App">
         <Alert kind='Info'>Grumpy</Alert>
         <h1>CPU %</h1>
         <XYPlot 

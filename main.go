@@ -33,9 +33,8 @@ func main() {
 	go hub.run()
 	http.Handle("/", http.FileServer(http.Dir("./client/build")))
 	http.HandleFunc("/api/cpu", cpuController)
-	// http.Handle("/api/limits/ram")
-	// http.Handle("/api/limits/cpu")
 	http.HandleFunc("/ws", wsController(hub))
+
 	err := http.ListenAndServe(*addr, nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
