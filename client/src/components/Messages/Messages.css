@@ -1,6 +1,7 @@
 .Messages {
   border-radius: 10px;
-  border: 1px ridge blue;
-  min-width: 20vw;
-  padding: 2rem;
+  border: 2px groove blue;
+  min-width: 15vw;
+  max-width: 25vw;
+  padding: 0.5rem;
 }

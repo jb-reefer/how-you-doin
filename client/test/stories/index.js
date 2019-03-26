@@ -1,20 +1,8 @@
 import { storiesOf } from "@storybook/react";
-import { Button } from "@storybook/react/demo";
 import { Alert } from '../../src/components/Alert'
+import { Messages } from '../../src/components/Messages'
 import React from "react";
-import {
-  action,
-  configureActions
-} from '@storybook/addon-actions';
-
-
-storiesOf("Button", module)
-  .add("with text", () => (
-    <Button>Hello Button</Button>
-  ))
-  .add("with emoji", () => (
-    <Button><span role="img" aria-label="so cool">😀 😎 👍 💯</span></Button>
-  ));
+import { action } from '@storybook/addon-actions';
 
 storiesOf("Alert", module)
 .add("Alerts - All", () => (<>
@@ -33,3 +21,13 @@ storiesOf("Alert", module)
   .add("Alert - Error", () => (
     <Alert kind="Error" closeHandler={action("Clicked!")} >Something bad happened!</Alert>
   ))
+
+storiesOf("Messages", module)
+.add("Messages - short", () => (
+  <Messages>{["I'm a short message", "Short", "Not Long", "Doesn't Wrap"]}</Messages>
+))
+.add("Messages - long", () => (
+  <Messages> 
+    {["Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", "Short", "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit,", "Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?"]}
+  </Messages>
+))
