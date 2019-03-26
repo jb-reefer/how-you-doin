@@ -1,8 +1,8 @@
+import React, { Component } from "react";
+import { Crosshair, HorizontalGridLines, LineSeries, VerticalGridLines, XAxis, XYPlot, YAxis } from "react-vis";
 import "./App.scss";
 import { Alert } from "./components/Alert";
 import { Messages } from "./components/Messages";
-import { XYPlot, XAxis, YAxis, LineSeries, HorizontalGridLines, VerticalGridLines, Crosshair } from "react-vis";
-import React, { Component } from "react";
 
 interface ICPUData {
   x: Date;
@@ -12,6 +12,7 @@ interface ICPUData {
 interface IAppState {
   cpuData: ICPUData[];
   crosshairValues: any;
+  messages: string[];
   error?: Error;
 }
 
@@ -23,6 +24,7 @@ class App extends Component<any, IAppState> {
     this.state = {
       cpuData: [],
       crosshairValues: [],
+      messages: [],
     };
 
     this.getCPUData().then(() => setInterval(this.getCPUData, SAMPLING_INTERVAL));
@@ -32,7 +34,10 @@ class App extends Component<any, IAppState> {
     return (
       <div className="App">
         <div className="Graph">
-        {this.state.error && <Alert kind='Error'>{this.state.error.message}</Alert>}
+        {this.state.error &&
+          <Alert kind="Error" closeHandler={this.closeAlertHandler}>
+            {this.state.error.message}
+          </Alert>}
         <h1>CPU %</h1>
         <XYPlot
           height={400}
@@ -46,9 +51,9 @@ class App extends Component<any, IAppState> {
           <HorizontalGridLines />
           <XAxis
             width={50}
-            tickFormat={v => {
+            tickFormat={(v) => {
             const day = new Date(v);
-              return `${day.getHours()}:${day.getMinutes()}:${day.getSeconds()}`
+            return `${day.getHours()}:${day.getMinutes()}:${day.getSeconds()}`;
           }} tickLabelAngle={-90}/>
           <YAxis />
           <LineSeries
@@ -67,9 +72,15 @@ class App extends Component<any, IAppState> {
           </Crosshair>
         </XYPlot>
         </div>
-        <Messages />
+        <Messages>{this.state.messages}</Messages>
       </div>
     );
+  }
+
+  private closeAlertHandler = () => {
+    this.setState({
+      error: undefined,
+    });
   }
 
   private tenMinutesOfSamples = () => {
@@ -100,21 +111,24 @@ class App extends Component<any, IAppState> {
           cpuData: buffer,
         });
       })
-      .catch((error) => {
+      .catch((error: Error) => {
         this.setState({
-          error
+          error,
+          messages: this.state.messages.concat(this.buildMessage(error.message)),
         });
       });
   }
 
+  private buildMessage = (text: string) => (new Date().toLocaleTimeString() + " : " + text);
+
   // TODO: pretty this up
   private onMouseLeave = () => {
     this.setState({ crosshairValues: [] });
-  };
+  }
 
   private onNearestX = (value, { index }) => {
-    this.setState({ crosshairValues: this.state.cpuData.map(d => d[index]) });
-  };
+    this.setState({ crosshairValues: this.state.cpuData.map((d) => d[index]) });
+  }
 
   private getXDomain = () => {
     const now = new Date();
