@@ -29,21 +29,12 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	flag.Parse()
-	hub := newHub()
-	go hub.run()
 	http.Handle("/", http.FileServer(http.Dir("./client/build")))
 	http.HandleFunc("/api/cpu", cpuController)
-	http.HandleFunc("/ws", wsController(hub))
 
 	err := http.ListenAndServe(*addr, nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
-	}
-}
-
-func wsController(hub *Hub) func(http.ResponseWriter, *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		serveWs(hub, w, r)
 	}
 }
 

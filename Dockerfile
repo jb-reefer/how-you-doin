@@ -4,10 +4,7 @@ WORKDIR ${GOPATH}/src/app
 COPY . .
 
 # Go build
-RUN apk add --update nodejs nodejs-npm sysstat git
-RUN wget https://raw.githubusercontent.com/golang/dep/master/install.sh 
-RUN chmod +x install.sh && ./install.sh
-RUN dep ensure
+RUN apk add --update nodejs nodejs-npm sysstat 
 RUN go build -o how-you-doin
 
 # TS build
