@@ -1,15 +1,26 @@
 package main
 
 import (
-	"errors"
+	"encoding/json"
 	"log"
 	"os/exec"
-	"strconv"
-	"strings"
 )
 
-func getMPStatData() string {
-	cmd := exec.Command("mpstat")
+type CPUStats struct {
+	Cpu  string  `json:"cpu"`
+	Idle float64 `json:"idle"`
+}
+
+type MPStatData struct {
+	Sysstat struct {
+		Hosts []struct {
+			Statistics []CPUStats
+		}
+	}
+}
+
+func getMPStatData() []byte {
+	cmd := exec.Command("mpstat", " -P ON", "-o JSON")
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
 		log.Fatal(err)
@@ -22,7 +33,7 @@ func getMPStatData() string {
 		log.Fatal(err)
 	}
 
-	return string(out[:])
+	return out
 }
 
 func mpstatError(err error) {
@@ -30,20 +41,25 @@ func mpstatError(err error) {
 	log.Fatal("Could not parse CPU data from MPStat")
 }
 
-// GetUsedCPUPercent Get percent of current cpu (linux only)
-func GetUsedCPUPercent() float64 {
-	mpstatData := getMPStatData()
-	lastSpace := strings.LastIndex(mpstatData, " ")
-
-	if lastSpace == -1 {
-		mpstatError(errors.New("Could not find CPU percentage"))
-	}
-
-	idlePercentage, err := strconv.ParseFloat(mpstatData[lastSpace+1:lastSpace+6], 32)
+func ParseMPStatJson(mpstatJson []byte) (MPStatData, error) {
+	var data MPStatData
+	err := json.Unmarshal(mpstatJson, &data)
 
 	if err != nil {
-		mpstatError(err)
+		return data, err
 	}
 
-	return 100.00 - idlePercentage
+	return data, nil
+}
+
+// GetUsedCPUPercent Get percent of current cpu (linux only)
+func GetUsedCPUPercent() []CPUStats {
+	mpstatData := getMPStatData()
+	mpstats, err := ParseMPStatJson(mpstatData)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return mpstats.Sysstat.Hosts[0].Statistics
 }
