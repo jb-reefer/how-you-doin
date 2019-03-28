@@ -41,16 +41,12 @@ func getMPStatData() []byte {
 	return fileContents
 }
 
-func mpstatError(err error) {
-	log.Print(err)
-	log.Fatal("Could not parse CPU data from MPStat")
-}
-
 func ParseMPStatJson(mpstatJSON []byte) (MPStatData, error) {
 	var data MPStatData
 	err := json.Unmarshal(mpstatJSON, &data)
 
 	// This is a hack because of a flaw in sysstat's JSON output. I filed a ticket here: https://github.com/sysstat/sysstat/issues/216
+	// TODO: this might be because of the buffer issue
 	if err != nil {
 		fixedJSON := bytes.Replace(mpstatJSON, []byte("}]"), []byte(""), 1)
 		err = json.Unmarshal(fixedJSON, &data)
@@ -60,14 +56,13 @@ func ParseMPStatJson(mpstatJSON []byte) (MPStatData, error) {
 }
 
 // GetUsedCPUPercent Get percent of current cpu (linux only)
-func GetUsedCPUPercent() []CPUStats {
+func GetUsedCPUPercent() ([]CPUStats, error) {
 	mpstatData := getMPStatData()
 	mpstats, err := ParseMPStatJson(mpstatData)
 
 	if err != nil {
-		mpstatError(err)
+		return nil, err
 	}
 
-	log.Printf("%+v", mpstats)
-	return mpstats.Sysstat.Hosts[0].Statistics[0].CPULoad
+	return mpstats.Sysstat.Hosts[0].Statistics[0].CPULoad, nil
 }

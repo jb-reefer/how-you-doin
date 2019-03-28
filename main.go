@@ -5,6 +5,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
@@ -38,8 +39,25 @@ func main() {
 	}
 }
 
+func errorWriter(w http.ResponseWriter, err error) {
+	w.WriteHeader(500)
+	w.Write([]byte("Received error"))
+	fmt.Fprint(w, "Server error: "+err.Error())
+}
+
 func cpuController(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, GetUsedCPUPercent())
+	percentageData, percentageError := GetUsedCPUPercent()
+	if percentageError != nil {
+		errorWriter(w, percentageError)
+		return
+	}
+	cpuJSON, marshallError := json.Marshal(percentageData)
+	if marshallError != nil {
+		errorWriter(w, marshallError)
+		return
+	}
+
+	fmt.Fprint(w, string(cpuJSON))
 }
 
 // docker kill how-you-doin && docker rm how-you-doin && docker build . -t how-you-doin:latest && docker run -d  --name how-you-doin -p 8080:8080 how-you-doin:latest
