@@ -1,17 +1,15 @@
 import React, { Component } from "react";
-import { Crosshair, HorizontalGridLines, LineSeries, VerticalGridLines, XAxis, XYPlot, YAxis } from "react-vis";
-import "./App.scss";
+import "./App.css";
 import { Alert } from "./components/Alert";
 import { Messages } from "./components/Messages";
 
-interface ICPUData {
+export interface ICPUData {
   x: Date;
   y: number;
 }
 
 interface IAppState {
   cpuData: ICPUData[];
-  crosshairValues: any;
   messages: string[];
   error?: Error;
 }
@@ -23,7 +21,6 @@ class App extends Component<any, IAppState> {
     super(props);
     this.state = {
       cpuData: [],
-      crosshairValues: [],
       messages: [],
     };
 
@@ -39,38 +36,6 @@ class App extends Component<any, IAppState> {
             {this.state.error.message}
           </Alert>}
         <h1>CPU %</h1>
-        <XYPlot
-          height={400}
-          width={800}
-          onMouseLeave={this.onMouseLeave}
-          onNearestX={this.onNearestX}
-          xDomain={this.getXDomain()}
-          yDomain={[0, 100]}
-        >
-          <VerticalGridLines />
-          <HorizontalGridLines />
-          <XAxis
-            width={50}
-            tickFormat={(v) => {
-            const day = new Date(v);
-            return `${day.getHours()}:${day.getMinutes()}:${day.getSeconds()}`;
-          }} tickLabelAngle={-90}/>
-          <YAxis />
-          <LineSeries
-            data={this.state.cpuData}
-            opacity={1}
-            strokeStyle="solid"
-            curve="curveStep"
-          >
-          </LineSeries>
-          <Crosshair values={this.state.crosshairValues}>
-            <div style={{ background: "black" }}>
-              <h3>Values of crosshair:</h3>
-              <p>x: {this.state.crosshairValues}</p>
-              <p>y: {this.state.crosshairValues}</p>
-            </div>
-          </Crosshair>
-        </XYPlot>
         </div>
         <Messages>{this.state.messages}</Messages>
       </div>
@@ -120,21 +85,6 @@ class App extends Component<any, IAppState> {
   }
 
   private buildMessage = (text: string) => (new Date().toLocaleTimeString() + " : " + text);
-
-  // TODO: pretty this up
-  private onMouseLeave = () => {
-    this.setState({ crosshairValues: [] });
-  }
-
-  private onNearestX = (value, { index }) => {
-    this.setState({ crosshairValues: this.state.cpuData.map((d) => d[index]) });
-  }
-
-  private getXDomain = () => {
-    const now = new Date();
-    const tenMinutesAgo = (new Date()).setMinutes(now.getMinutes() - 10);
-    return [tenMinutesAgo, now.getTime()];
-  }
 }
 
 export default App;
