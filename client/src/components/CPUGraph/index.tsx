@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Crosshair, HorizontalGridLines, LineSeries, VerticalGridLines, XAxis, XYPlot, YAxis, Hint } from "react-vis";
+import { Crosshair, HorizontalGridLines, LineSeries, VerticalGridLines, XAxis, XYPlot, YAxis } from "react-vis";
 import { ICPUData } from "../../App";
 import "./CPUGraph.scss";
 
@@ -8,7 +8,7 @@ interface IGraphProps {
 }
 
 interface IGraphState {
-  crosshairValues?: ICPUData;
+  crosshairValue?: ICPUData;
 }
 
 export class CPUGraph extends React.Component<IGraphProps, IGraphState> {
@@ -16,7 +16,7 @@ export class CPUGraph extends React.Component<IGraphProps, IGraphState> {
     super(props);
 
     this.state = {
-      crosshairValues: this.props.cpuData[0],
+      crosshairValue: undefined,
     };
   }
 
@@ -46,24 +46,21 @@ export class CPUGraph extends React.Component<IGraphProps, IGraphState> {
           onNearestXY={this.onNearestXY}
         >
         </LineSeries>
-        {this.state.crosshairValues && <Hint value={this.state.crosshairValues}>
-          <div style={{ background: "black" }}>
-            <h3>Values of crosshair:</h3>
-            <p>x: {this.state.crosshairValues.x.toLocaleTimeString()}</p>
-            <p>y: {this.state.crosshairValues.y}</p>
+        {this.state.crosshairValue && <Crosshair values={[this.state.crosshairValue]}>
+          <div style={{ color: "white", textAlign: "center", border: "solid", background: "grey", borderRadius: "10px", minWidth: "100px" }}>
+            <p>{this.state.crosshairValue.x.toLocaleTimeString()}</p>
+            <p>{this.state.crosshairValue.y}%</p>
           </div>
-        </Hint>}
+        </Crosshair>}
     </XYPlot>);
   }
 
-  // TODO: pretty this up
   private onMouseLeave = () => {
-    this.setState({ crosshairValues: undefined });
+    this.setState({ crosshairValue: undefined });
   }
 
   private onNearestXY = (value) => {
-    console.log('vlue', value)
-    this.setState({ crosshairValues: value });
+    this.setState({ crosshairValue: value });
   }
 
   private getXDomain = () => {

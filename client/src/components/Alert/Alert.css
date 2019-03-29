@@ -6,7 +6,7 @@
   text-align: center;
   border-width: 1px;
   border-style: solid;
-  border-radius: 5px;
+  border-radius: 10px;
   animation-name: fadeIn;
   animation-duration: 2s;
   display: flex;
