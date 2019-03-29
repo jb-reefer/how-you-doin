@@ -33,7 +33,7 @@ func getMPStatData() []byte {
 	// 	log.Fatal(outputErr)
 	// }
 	fileContents, err := ioutil.ReadFile("output.txt")
-	log.Printf("tot %s", fileContents)
+	// log.Printf("tot %s", fileContents)
 	if err != nil {
 		log.Print("Got an error reading MPStat data: ")
 		log.Fatal(err)

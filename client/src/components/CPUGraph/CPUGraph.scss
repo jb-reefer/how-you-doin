@@ -1,1 +1,11 @@
 @import "~react-vis/dist/style";
+
+// TODO: This won't attach - why?
+.data-label {
+  color: "white";
+  text-align: "center";
+  border: "solid";
+  background: "grey";
+  border-radius: "10px";
+  min-width: "100px";
+}
