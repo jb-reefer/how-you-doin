@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import "./App.css";
 import { Alert } from "./components/Alert";
+import { CPUGraph } from "./components/CPUGraph";
 import { Messages } from "./components/Messages";
 
 export interface ICPUData {
@@ -9,7 +10,7 @@ export interface ICPUData {
 }
 
 interface IAppState {
-  cpuData: ICPUData[];
+  cpuData: { [s: string]: ICPUData[]; };
   messages: string[];
   error?: Error;
 }
@@ -20,10 +21,11 @@ class App extends Component<any, IAppState> {
   constructor(props) {
     super(props);
     this.state = {
-      cpuData: [],
+      cpuData: { "all" : [] },
       messages: [],
     };
 
+    // TODO: this is io. where should it live?
     this.getCPUData().then(() => setInterval(this.getCPUData, SAMPLING_INTERVAL));
   }
 
@@ -35,7 +37,14 @@ class App extends Component<any, IAppState> {
           <Alert kind="Error" closeHandler={this.closeAlertHandler}>
             {this.state.error.message}
           </Alert>}
-        <h1>CPU %</h1>
+        {
+          Object.entries(this.state.cpuData).map(([name, cpuData]) => (
+            <>
+              <h1>CPU {name}</h1>
+              <CPUGraph cpuData={cpuData} />
+            </>
+          ))
+        }
         </div>
         <Messages>{this.state.messages}</Messages>
       </div>
@@ -53,28 +62,32 @@ class App extends Component<any, IAppState> {
     return tenMinutesMills / SAMPLING_INTERVAL;
   }
 
+  // TODO: jest test this
+  private addCPUDataToState = (cpuName: string, idle: number) => {
+    const cpuData = this.state.cpuData;
+    // TODO: there's a prettier way to do this
+    if (!cpuData[cpuName]) {
+      cpuData[cpuName] = [];
+    }
+    cpuData[cpuName] = cpuData[cpuName].concat({
+      x: new Date(),
+      y: 100.00 - idle,
+    });
+
+    // Only keep 10 minutes of samples
+    if (cpuData[cpuName].length + 1 > this.tenMinutesOfSamples()) {
+      cpuData[cpuName].shift();
+    }
+    this.setState({
+      cpuData,
+    });
+  }
+
   private getCPUData = () => {
     return fetch("/api/cpu")
-      .then((response) => response.text())
-      .then((percent: string) => {
-        const y = parseFloat(percent);
-        if (isNaN(y)) {
-          throw new Error("Could not parse cpu data from server");
-        }
-
-        const buffer: ICPUData[] = this.state.cpuData.concat({
-          x: new Date(),
-          y,
-        });
-
-        // Only keep 10 minutes of samples
-        // TODO: set the xDomain attr below
-        if (buffer.length + 1 > this.tenMinutesOfSamples()) {
-          buffer.shift();
-        }
-        this.setState({
-          cpuData: buffer,
-        });
+      .then((response) => response.json())
+      .then((data: Array<{cpu: string, idle: number}>) => {
+        data.forEach((record) => this.addCPUDataToState(record.cpu, record.idle));
       })
       .catch((error: Error) => {
         this.setState({

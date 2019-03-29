@@ -63,15 +63,17 @@ export class CPUGraph extends React.Component<IGraphProps, IGraphState> {
     this.setState({ crosshairValue: value });
   }
 
+  // TODO: test the shit out of this
   private getXDomain = () => {
-    const oldest = this.props.cpuData[0].x;
-    const youngest = this.props.cpuData[this.props.cpuData.length - 1].x;
+    const oldest = this.props.cpuData[0];
+    const youngest = this.props.cpuData[this.props.cpuData.length - 1];
 
-    if (new Date(oldest.getTime() - youngest.getTime()).getMinutes() <= 10) {
-      const tenMinutesAgo = (new Date()).setMinutes(youngest.getMinutes() - 10);
-      return [tenMinutesAgo, youngest.getTime()];
+    if (!oldest || !youngest || new Date(oldest.x.getTime() - youngest.x.getTime()).getMinutes() <= 10) {
+      const rightHandSide = (youngest && youngest.x) || new Date();
+      const tenMinutesAgo = (new Date()).setMinutes(rightHandSide.getMinutes() - 10);
+      return [tenMinutesAgo, rightHandSide.getTime()];
     }
 
-    return [oldest.getTime(), youngest.getTime()];
+    return [oldest.x.getTime(), youngest.x.getTime()];
   }
 }
