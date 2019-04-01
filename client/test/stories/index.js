@@ -5,6 +5,7 @@ import { Alert } from '../../src/components/Alert'
 import { Messages } from '../../src/components/Messages'
 import { CPUGraph } from '../../src/components/CPUGraph'
 import dummyCPUData from "../../src/test/dummyData";
+import "../../src/App.css";
 
 storiesOf("Alert", module)
 .add("Alerts - All", () => (<>

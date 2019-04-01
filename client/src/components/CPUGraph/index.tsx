@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Crosshair, HorizontalGridLines, LineSeries, VerticalGridLines, XAxis, XYPlot, YAxis } from "react-vis";
+import { Crosshair, HorizontalGridLines, LineSeries, XAxis, XYPlot, YAxis } from "react-vis";
 import { ICPUData } from "../../App";
 import "./CPUGraph.scss";
 
@@ -29,7 +29,6 @@ export class CPUGraph extends React.Component<IGraphProps, IGraphState> {
         xDomain={this.getXDomain()}
         yDomain={[0, 100]}
       >
-        <VerticalGridLines />
         <HorizontalGridLines />
         <XAxis
           width={50}
@@ -46,10 +45,11 @@ export class CPUGraph extends React.Component<IGraphProps, IGraphState> {
           onNearestXY={this.onNearestXY}
         >
         </LineSeries>
-        {this.state.crosshairValue && <Crosshair values={[this.state.crosshairValue]}>
-          <div style={{ color: "white", textAlign: "center", border: "solid", background: "grey", borderRadius: "10px", minWidth: "100px" }}>
+        {this.state.crosshairValue && <Crosshair
+        values={[this.state.crosshairValue]}>
+          <div style={{ color: "white", textAlign: "center", background: "rgb(18, 147, 154)", padding: "3px", borderRadius: "10px", fontSize: "120%", minWidth: "100px" }}>
+            <p>CPU: {this.state.crosshairValue.y}%</p>
             <p>{this.state.crosshairValue.x.toLocaleTimeString()}</p>
-            <p>{this.state.crosshairValue.y}%</p>
           </div>
         </Crosshair>}
     </XYPlot>);

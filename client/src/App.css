@@ -1,7 +1,10 @@
+@import url('https://fonts.googleapis.com/css?family=Heebo');
+
 .App {
   display: flex;
   flex-wrap: wrap;
   align-content: center;
+  font-family: 'Heebo', sans-serif;
 }
 
 .Graph {

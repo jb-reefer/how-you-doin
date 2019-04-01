@@ -24,13 +24,15 @@
 }
 
 .Info {
-  background-color: cyan;
+  background-color: #A4E8FE;
+  opacity: 0.8;
 }
 
 .Warning {
-  background-color: yellow;
+  background-color: #FFFF75;
+  opacity: 0.8;
 }
 
 .Error {
-  background-color: pink;
+  background-color: #EF767A;
 }
