@@ -4,12 +4,10 @@ WORKDIR ${GOPATH}/src/app
 COPY . .
 
 # Go build
-RUN apk add --update nodejs nodejs-npm sysstat coreutils
+RUN apk add --update coreutils nodejs nodejs-npm sysstat 
 RUN go build -o how-you-doin
-# TODO: remove this hack
-RUN stdbuf -i0 -o0 -e0 mpstat -o JSON -P ON >> output.txt
 
 # TS build
 RUN cd client && npm ci && npm run build
 
-CMD [ "./how-you-doin" ]
+CMD [ "stdbuf", "-i0", "-o0", "-e0", "./how-you-doin" ]

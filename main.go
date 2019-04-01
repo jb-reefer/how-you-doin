@@ -42,7 +42,7 @@ func main() {
 func errorWriter(w http.ResponseWriter, err error) {
 	w.WriteHeader(500)
 	w.Write([]byte("Received error"))
-	fmt.Fprint(w, "Server error: "+err.Error())
+	fmt.Fprint(w, "Server error: ", err.Error())
 }
 
 func cpuController(w http.ResponseWriter, r *http.Request) {
