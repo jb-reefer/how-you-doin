@@ -1,11 +1,11 @@
 import React from "react";
 import { storiesOf } from "@storybook/react";
 import { action } from '@storybook/addon-actions';
-import { Alert } from '../../src/components/Alert'
-import { Messages } from '../../src/components/Messages'
-import { CPUGraph } from '../../src/components/CPUGraph'
-import dummyCPUData from "../../src/test/dummyData";
-import "../../src/App.css";
+import { Alert } from '../../components/Alert'
+import { Messages } from '../../components/Messages'
+import { CPUGraph } from '../../components/CPUGraph'
+import dummyCPUData from "../unit_tests/dummyData"
+import "../../App.css";
 
 storiesOf("Alert", module)
 .add("Alerts - All", () => (<>
