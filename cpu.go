@@ -1,15 +1,13 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
-	"io/ioutil"
 	"log"
-	// "os/exec"
+	"os/exec"
 )
 
 type CPUStats struct {
-	Cpu  string  `json:"cpu"`
+	CPU  string  `json:"cpu"`
 	Idle float64 `json:"idle"`
 }
 
@@ -23,46 +21,35 @@ type MPStatData struct {
 	}
 }
 
-func getMPStatData() []byte {
-	// TODO: i think i need to use a buffer to avoid this issues
-	// the problem is that the return is extremely long so i get bum output
-	// out, outputErr := exec.Command("mpstat", "-P", "ON", "-o", "JSON", ">>", "output.txt").CombinedOutput()
-	// log.Printf("tot %s", out)
-	// if outputErr != nil {
-	// 	log.Print("Got an error calling MPStat: ")
-	// 	log.Fatal(outputErr)
-	// }
-	fileContents, err := ioutil.ReadFile("output.txt")
-	// log.Printf("tot %s", fileContents)
-	if err != nil {
-		log.Print("Got an error reading MPStat data: ")
-		log.Fatal(err)
+func getMPStatData() (MPStatData, error) {
+	cmd := exec.Command("mpstat", "-P", "ON", "-o", "JSON")
+	stdout, outputErr := cmd.StdoutPipe()
+	if outputErr != nil {
+		log.Print("Got an error calling MPStat: ")
+		log.Fatal(outputErr)
 	}
-	return fileContents
-}
-
-func ParseMPStatJson(mpstatJSON []byte) (MPStatData, error) {
+	if err := cmd.Start(); err != nil {
+		log.Fatal("1", err)
+	}
 	var data MPStatData
-	err := json.Unmarshal(mpstatJSON, &data)
-
-	// This is a hack because of a flaw in sysstat's JSON output. I filed a ticket here: https://github.com/sysstat/sysstat/issues/216
-	// TODO: this might be because of the buffer issue
-	if err != nil {
-		fixedJSON := bytes.Replace(mpstatJSON, []byte("}]"), []byte(""), 1)
-		err = json.Unmarshal(fixedJSON, &data)
+	if err := json.NewDecoder(stdout).Decode(&data); err != nil {
+		log.Fatal("2", err)
 	}
-
-	return data, err
+	if err := cmd.Wait(); err != nil {
+		log.Fatal("3", err)
+	}
+	log.Printf("Decoded data %+v\n", data)
+	// TODO: FIX THIS ERROR HANDLING ASAP!!
+	return data, nil
 }
 
 // GetUsedCPUPercent Get percent of current cpu (linux only)
 func GetUsedCPUPercent() ([]CPUStats, error) {
-	mpstatData := getMPStatData()
-	mpstats, err := ParseMPStatJson(mpstatData)
+	mpstatData, err := getMPStatData()
 
 	if err != nil {
 		return nil, err
 	}
 
-	return mpstats.Sysstat.Hosts[0].Statistics[0].CPULoad, nil
+	return mpstatData.Sysstat.Hosts[0].Statistics[0].CPULoad, nil
 }
