@@ -1,43 +1,11 @@
 package main
 
 import (
+	"encoding/json"
 	"testing"
 )
 
-func TestSimpleParsing(t *testing.T) {
-	data := `{
-  "sysstat": {
-    "hosts": [{
-      "statistics": [{
-        "cpu-load": [{
-          "cpu": "all",
-          "idle": 95.38
-        }, {
-          "cpu": "0",
-          "idle": 95.43
-        }, {
-          "cpu": "1",
-          "idle": 95.33
-        }]
-      }]
-    }]
-  }
-}`
-
-	output, err := ParseMPStatJson([]byte(data))
-	if err != nil {
-		t.Error("Got an error parsing simple json!", err)
-	}
-	if len(output.Sysstat.Hosts[0].Statistics[0].CPULoad) == 0 {
-		t.Error("Did not find any data!", output.Sysstat.Hosts[0].Statistics)
-	}
-
-	if len(output.Sysstat.Hosts[0].Statistics[0].CPULoad) != 3 {
-		t.Error("Did not find correct data!", output.Sysstat.Hosts[0].Statistics)
-	}
-}
-
-func TestRealParsing(t *testing.T) {
+func TestParseMPStatJson(t *testing.T) {
 	data := `{"sysstat": {
         "hosts": [
                 {
@@ -61,16 +29,17 @@ func TestRealParsing(t *testing.T) {
         ]
 }}`
 
-	output, err := ParseMPStatJson([]byte(data))
+	var buffer MPStatData
+	err := json.Unmarshal([]byte(data), &buffer)
 	if err != nil {
 		t.Error("Got an error parsing simple json!", err)
 	}
-	if len(output.Sysstat.Hosts[0].Statistics[0].CPULoad) == 0 {
-		t.Error("Did not find any data!", output.Sysstat.Hosts[0].Statistics)
+	if len(buffer.Sysstat.Hosts[0].Statistics[0].CPULoad) == 0 {
+		t.Error("Did not find any data!", buffer.Sysstat.Hosts[0].Statistics)
 	}
 
-	if len(output.Sysstat.Hosts[0].Statistics[0].CPULoad) != 3 {
-		t.Error("Did not find correct data!", output.Sysstat.Hosts[0].Statistics)
+	if len(buffer.Sysstat.Hosts[0].Statistics[0].CPULoad) != 3 {
+		t.Error("Did not find correct data!", buffer.Sysstat.Hosts[0].Statistics)
 	}
 
 }
