@@ -1,7 +1,3 @@
-// Copyright 2013 The Gorilla WebSocket Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-
 package main
 
 import (
@@ -12,23 +8,10 @@ import (
 	"net/http"
 )
 
-var addr = flag.String("addr", ":8080", "http service address")
-
-func serveHome(w http.ResponseWriter, r *http.Request) {
-	log.Println(r.URL)
-	if r.URL.Path != "/" {
-		http.Error(w, "Not found", http.StatusNotFound)
-		return
-	}
-	if r.Method != "GET" {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-	http.ServeFile(w, r, "home.html")
-	http.Handle("/", http.FileServer(http.Dir("./static")))
-}
+var addr = flag.String("addr", ":8080", "HTTP service address")
 
 func main() {
+	log.Println("Starting CPU telemetry on port ", addr)
 	flag.Parse()
 	http.Handle("/", http.FileServer(http.Dir("./client/build")))
 	http.HandleFunc("/api/cpu", cpuController)
@@ -59,5 +42,3 @@ func cpuController(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Fprint(w, string(cpuJSON))
 }
-
-// docker kill how-you-doin && docker rm how-you-doin && docker build . -t how-you-doin:latest && docker run -d  --name how-you-doin -p 8080:8080 how-you-doin:latest

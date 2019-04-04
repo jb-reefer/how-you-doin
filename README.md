@@ -13,5 +13,3 @@ To run: `docker build . -t how-you-doin:latest && docker run -d  --name how-you-
 To run go tests: `go test`
 
 To run Storybook: `cd client && npm ci && npm run storybook`
-
-<!-- TODO: flesh this out more! -->

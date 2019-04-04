@@ -20,7 +20,29 @@ export class CPUGraph extends React.Component<IGraphProps, IGraphState> {
     };
   }
 
-  public render = () => {
+  onMouseLeave = () => {
+    this.setState({ crosshairValue: undefined });
+  }
+
+  onNearestXY = (value) => {
+    this.setState({ crosshairValue: value });
+  }
+
+  // TODO: test the shit out of this
+  getXDomain = () => {
+    const oldest = this.props.cpuData[0];
+    const youngest = this.props.cpuData[this.props.cpuData.length - 1];
+
+    if (!oldest || !youngest || new Date(oldest.x.getTime() - youngest.x.getTime()).getMinutes() <= 10) {
+      const rightHandSide = (youngest && youngest.x) || new Date();
+      const tenMinutesAgo = (new Date()).setMinutes(rightHandSide.getMinutes() - 10);
+      return [tenMinutesAgo, rightHandSide.getTime()];
+    }
+
+    return [oldest.x.getTime(), youngest.x.getTime()];
+  }
+
+  render = () => {
     return (
       <XYPlot
         height={400}
@@ -33,9 +55,9 @@ export class CPUGraph extends React.Component<IGraphProps, IGraphState> {
         <XAxis
           width={50}
           tickFormat={(v) => {
-          const day = new Date(v);
-          return `${day.getHours()}:${day.getMinutes()}:${day.getSeconds()}`;
-        }} tickLabelAngle={-90}/>
+            const day = new Date(v);
+            return `${day.getHours()}:${day.getMinutes()}:${day.getSeconds()}`;
+          }} tickLabelAngle={-90} />
         <YAxis />
         <LineSeries
           data={this.props.cpuData}
@@ -46,34 +68,12 @@ export class CPUGraph extends React.Component<IGraphProps, IGraphState> {
         >
         </LineSeries>
         {this.state.crosshairValue && <Crosshair
-        values={[this.state.crosshairValue]}>
+          values={[this.state.crosshairValue]}>
           <div style={{ color: "white", textAlign: "center", background: "rgb(18, 147, 154)", padding: "3px", borderRadius: "10px", fontSize: "120%", minWidth: "100px" }}>
             <p>CPU: {this.state.crosshairValue.y}%</p>
             <p>{this.state.crosshairValue.x.toLocaleTimeString()}</p>
           </div>
         </Crosshair>}
-    </XYPlot>);
-  }
-
-  private onMouseLeave = () => {
-    this.setState({ crosshairValue: undefined });
-  }
-
-  private onNearestXY = (value) => {
-    this.setState({ crosshairValue: value });
-  }
-
-  // TODO: test the shit out of this
-  private getXDomain = () => {
-    const oldest = this.props.cpuData[0];
-    const youngest = this.props.cpuData[this.props.cpuData.length - 1];
-
-    if (!oldest || !youngest || new Date(oldest.x.getTime() - youngest.x.getTime()).getMinutes() <= 10) {
-      const rightHandSide = (youngest && youngest.x) || new Date();
-      const tenMinutesAgo = (new Date()).setMinutes(rightHandSide.getMinutes() - 10);
-      return [tenMinutesAgo, rightHandSide.getTime()];
-    }
-
-    return [oldest.x.getTime(), youngest.x.getTime()];
+      </XYPlot>);
   }
 }

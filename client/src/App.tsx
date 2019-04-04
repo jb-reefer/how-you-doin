@@ -24,12 +24,13 @@ class App extends Component<any, IAppState> {
       cpuData: { "all" : [] },
       messages: [],
     };
+  }
 
-    // TODO: this is io. where should it live?
+  componentDidMount = () => {
     this.getCPUData().then(() => setInterval(this.getCPUData, SAMPLING_INTERVAL));
   }
 
-  public render = () => {
+  render = () => {
     return (
       <div className="App">
         <div className="Graph">
@@ -38,7 +39,7 @@ class App extends Component<any, IAppState> {
             {this.state.error.message}
           </Alert>}
         {
-          Object.entries(this.state.cpuData).map(([name, cpuData]) => (
+          Object.entries(this.state.cpuData).sort().map(([name, cpuData]) => (
             <>
               <h1>CPU {name}</h1>
               <CPUGraph cpuData={cpuData} />
@@ -51,19 +52,19 @@ class App extends Component<any, IAppState> {
     );
   }
 
-  private closeAlertHandler = () => {
+  closeAlertHandler = () => {
     this.setState({
       error: undefined,
     });
   }
 
-  private tenMinutesOfSamples = () => {
+  tenMinutesOfSamples = () => {
     const tenMinutesMills = 10 * 60 * 1000;
     return tenMinutesMills / SAMPLING_INTERVAL;
   }
 
   // TODO: jest test this
-  private addCPUDataToState = (cpuName: string, idle: number) => {
+  addCPUDataToState = (cpuName: string, idle: number) => {
     const cpuData = this.state.cpuData;
     // TODO: there's a prettier way to do this
     if (!cpuData[cpuName]) {
@@ -83,7 +84,7 @@ class App extends Component<any, IAppState> {
     });
   }
 
-  private getCPUData = () => {
+  getCPUData = () => {
     return fetch("/api/cpu")
       .then((response) => response.json())
       .then((data: Array<{cpu: string, idle: number}>) => {
@@ -97,7 +98,7 @@ class App extends Component<any, IAppState> {
       });
   }
 
-  private buildMessage = (text: string) => (new Date().toLocaleTimeString() + " : " + text);
+  buildMessage = (text: string) => (new Date().toLocaleTimeString() + " : " + text);
 }
 
 export default App;
