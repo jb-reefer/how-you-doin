@@ -1,40 +1,49 @@
 import React from "react";
 import ReactDOM from "react-dom";
+import { AlertTracker } from "./alertTracker";
 import App, { ICPUData } from "./App";
-
-// Whenever the load for the past 2 minutes exceeds 1 on average, add a message saying that “High load generated an alert - load = { value }, triggered at { time } ”
-// Whenever the load average drops again below 1 on average for the past 2 minutes, Add another message explaining when the alert recovered.
-// Make sure all messages showing when alerting thresholds are crossed remain visible on the page for historical reasons.
 
 const SAMPLING_INTERVAL = 10 * 1000;
 const cpuData: { [s: string]: ICPUData[]; } = { all: [] };
 const messages: string[] = [];
-let message: string | undefined;
+let alert: string | undefined;
 
-// TODO: jest test this
-const StoreCPUData = (cpuName: string, idle: number) => {
+const alertTracker = new AlertTracker();
+
+const handleNewCPUData = (cpuName: string, idle: number) => {
+  const percentFree = 100.00 - idle;
   cpuData[cpuName] = (cpuData[cpuName] || []).concat({
     x: new Date(),
-    y: 100.00 - idle,
+    y: percentFree,
   });
 
   // Only keep 10 minutes of samples
   if (cpuData[cpuName].length + 1 > tenMinutesOfSamples()) {
     cpuData[cpuName].shift();
   }
-}
+
+  const message = alertTracker.getMessage(percentFree);
+  if (message) {
+    handleMessage(message);
+  }
+};
 
 const getCPUData = () => {
   return fetch("/api/cpu")
     .then((response) => response.json())
     .then((data: Array<{ cpu: string, idle: number }>) => {
-      data.forEach((record) => StoreCPUData(record.cpu, record.idle));
+      data.forEach((record) => handleNewCPUData(record.cpu, record.idle));
     })
-    .catch((error: Error) => {
-      message = error.message;
-      messages.unshift(buildMessage(error.message));
-    });
-}
+    .catch((error: Error) => handleMessage(error.message));
+};
+
+/**
+ *  Set the alert and make sure all messages showing when alerting thresholds are crossed remain visible on the page for historical reasons.
+*/
+const handleMessage = (message: string) => {
+  alert = message;
+  messages.unshift(buildMessage(message));
+};
 
 const tenMinutesOfSamples = () => {
   const tenMinutesMills = 10 * 60 * 1000;
@@ -44,16 +53,16 @@ const tenMinutesOfSamples = () => {
 getCPUData().then(() => setInterval(getCPUData, SAMPLING_INTERVAL));
 
 const closeAlertHandler = () => {
-  message = undefined;
+  alert = undefined;
 };
 
-const buildMessage = (text: string) => (new Date().toLocaleTimeString() + " : " + text);
+const buildMessage = (text: string) => (`${text}, triggered at ${new Date().toLocaleTimeString()}`);
 
 ReactDOM.render(
   <App
     cpuData={cpuData}
     messages={messages}
-    alert={message}
+    alert={alert}
     closeAlertHandler={closeAlertHandler}
   />,
   document.getElementById("root"));
