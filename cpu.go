@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"log"
+	"fmt"
 	"os/exec"
 )
 
@@ -21,29 +21,31 @@ type MPStatData struct {
 	}
 }
 
+func formatMPStatError(err error) error {
+	return fmt.Errorf("Got an error calling MPStat: %+v", err)
+}
+
 func getMPStatData() (MPStatData, error) {
 	cmd := exec.Command("mpstat", "-P", "ON", "-o", "JSON")
-	stdout, outputErr := cmd.StdoutPipe()
-	if outputErr != nil {
-		log.Print("Got an error calling MPStat: ")
-		log.Fatal(outputErr)
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return MPStatData{}, formatMPStatError(err)
 	}
 	if err := cmd.Start(); err != nil {
-		log.Fatal("1", err)
+		return MPStatData{}, formatMPStatError(err)
 	}
 	var data MPStatData
 	if err := json.NewDecoder(stdout).Decode(&data); err != nil {
-		log.Fatal("2", err)
+		return MPStatData{}, fmt.Errorf("Got an error decoding MPStat json: %+v", err)
 	}
 	if err := cmd.Wait(); err != nil {
-		log.Fatal("3", err)
+		return MPStatData{}, formatMPStatError(err)
 	}
-	log.Printf("Decoded data %+v\n", data)
-	// TODO: FIX THIS ERROR HANDLING ASAP!!
+
 	return data, nil
 }
 
-// GetUsedCPUPercent Get percent of current cpu (linux only)
+// GetUsedCPUPercent Get average load percentage per CPU (linux only)
 func GetUsedCPUPercent() ([]CPUStats, error) {
 	mpstatData, err := getMPStatData()
 
